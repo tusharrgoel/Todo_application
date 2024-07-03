@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Todo application</string>
+    <string name="todo_list">TODO LIST</string>
+    <string name="add_task">Add Task</string>
+    <string name="enter_todo_task">Enter todo task</string>
+    <string name="loading_text">Loading..</string>
+</resources>
