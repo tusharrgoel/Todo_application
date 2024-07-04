@@ -18,6 +18,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.atomic.AtomicLong
+import androidx.appcompat.app.AlertDialog
 
 
 class MainActivity : AppCompatActivity() {
@@ -39,21 +40,22 @@ class MainActivity : AppCompatActivity() {
         todoView = findViewById(R.id.recyclerView)
         addTaskButton = findViewById(R.id.addtaskbutton)
         addTask = findViewById(R.id.addtasktext)
-
         userName.text = getString(R.string.loading_text)
 
-        todoAdapter = TodoAdapter(mutableListOf()) { todoItem ->
+        todoAdapter = TodoAdapter(mutableListOf(), onDeleteClick = { todoItem ->
             viewModel.deleteTodoItem(todoItem)
-        }
+        }, onTaskStatusChanged = {todoItem,isCompleted->
+            viewModel.isTaskCompleted(todoItem, isCompleted)
+        }, onEditClick = {todoItem ->
+            showEditDialog(todoItem)
+        })
 
         fetchUserName()
-
 
         val layoutManager = GridLayoutManager(this, 2)
         todoView.layoutManager = layoutManager
         todoView.adapter = todoAdapter
 
-        AtomicLong(0)
 
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -61,14 +63,34 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
         addTaskButton.setOnClickListener {
             val taskTitle = addTask.text.toString()
             if (taskTitle.isNotEmpty()) {
-                var tid = AtomicLong(0)
-               viewModel.addTodoItem(TodoItem(id = tid.toString(),taskTitle = taskTitle))
+                val tid = AtomicLong(0)
+               viewModel.addTodoItem(TodoItem(id = tid.toString(), taskTitle = taskTitle))
                 addTask.text.clear()
             }
         }
+    }
+    private fun showEditDialog(todoItem: TodoItem) {
+        val dialogView = layoutInflater.inflate(R.layout.edit_todo, null)
+        val editTodo = dialogView.findViewById<EditText>(R.id.editText)
+        editTodo.setText(todoItem.taskTitle)
+
+        AlertDialog.Builder(this)
+            .setTitle("Edit Todo")
+            .setView(dialogView)
+            .setPositiveButton("Update") { _, _ ->
+                val newTask = editTodo.text.toString()
+                if (newTask.isNotEmpty()) {
+                    todoItem.taskTitle = newTask
+                    viewModel.updateTodoItem(todoItem)
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .create()
+            .show()
     }
     private fun fetchUserName(){
         val retrofit = Retrofit.Builder().baseUrl("https://api.io/")

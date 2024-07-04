@@ -22,7 +22,13 @@ class MainViewModel(application: Application):AndroidViewModel(application) {
     fun addTodoItem(todoItem: TodoItem) = viewModelScope.launch {
         repository.insert(todoItem)
     }
-
+    fun updateTodoItem(todoItem:TodoItem) = viewModelScope.launch{
+        repository.update(todoItem)
+    }
+    fun isTaskCompleted(todoItem: TodoItem, isCompleted: Boolean) = viewModelScope.launch {
+        todoItem.isCompleted = isCompleted
+        repository.update(todoItem)
+    }
     fun deleteTodoItem(todoItem: TodoItem) = viewModelScope.launch {
         repository.delete(todoItem)
     }
